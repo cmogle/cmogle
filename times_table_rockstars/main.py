@@ -22,6 +22,7 @@ from ui.screens import (
     GameplayScreen, ResultsScreen, StatsScreen, SettingsScreen,
     AvatarCustomizationScreen
 )
+from ui.user_screens import UserSelectionScreen, ProfileManageScreen
 from ui.themes import ThemeManager
 
 
@@ -56,7 +57,11 @@ class TimesTableRockstarsApp(App):
         # Create screen manager
         screen_manager = ScreenManager(transition=FadeTransition())
 
-        # Add all screens
+        # Add user management screens
+        screen_manager.add_widget(UserSelectionScreen(self.game_engine, name='user_select'))
+        screen_manager.add_widget(ProfileManageScreen(self.game_engine, name='profile_manage'))
+
+        # Add game screens
         screen_manager.add_widget(MenuScreen(self.game_engine, name='menu'))
         screen_manager.add_widget(GarageSelectScreen(self.game_engine, name='garage_select'))
         screen_manager.add_widget(JammingSelectScreen(self.game_engine, name='jamming_select'))
@@ -73,8 +78,11 @@ class TimesTableRockstarsApp(App):
             name='avatar_custom'
         ))
 
-        # Start with menu screen
-        screen_manager.current = 'menu'
+        # Start with user selection screen if multiple users, otherwise menu
+        if len(self.game_engine.get_profile_manager().get_all_profiles()) > 1:
+            screen_manager.current = 'user_select'
+        else:
+            screen_manager.current = 'menu'
 
         # Start background music
         # self.audio_manager.start_music()  # Uncomment when music files are added
@@ -84,7 +92,9 @@ class TimesTableRockstarsApp(App):
     def on_start(self):
         """Called when the application starts."""
         print("Times Table Rockstars - Starting!")
-        print(f"Profile: {self.game_engine.profile.data['rock_name']}")
+        print(f"Current Profile: {self.game_engine.profile.data.get('name', 'Player')}")
+        print(f"Rock Name: {self.game_engine.profile.data['rock_name']}")
+        print(f"Total users: {len(self.game_engine.get_profile_manager().get_all_profiles())}")
 
     def on_pause(self):
         """Called when app goes to background (mobile)."""

@@ -1,6 +1,7 @@
 """Core game engine."""
 
 from game.profile import Profile
+from game.profile_manager import ProfileManager
 from game.modes import GarageMode, StudioMode, JammingMode, SoundcheckMode
 from config.settings import Settings
 
@@ -9,7 +10,8 @@ class GameEngine:
     """Main game engine that coordinates all game systems."""
 
     def __init__(self):
-        self.profile = Profile()
+        self.profile_manager = ProfileManager()
+        self.profile = self.profile_manager.get_current_profile()
         self.settings = Settings()
         self.current_mode = None
         self.audio_manager = None  # Will be set by UI
@@ -17,6 +19,24 @@ class GameEngine:
     def get_profile(self):
         """Get the current profile."""
         return self.profile
+
+    def get_profile_manager(self):
+        """Get the profile manager."""
+        return self.profile_manager
+
+    def switch_user(self, user_id):
+        """Switch to a different user.
+
+        Args:
+            user_id: The ID of the user to switch to
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        if self.profile_manager.set_current_user(user_id):
+            self.profile = self.profile_manager.get_current_profile()
+            return True
+        return False
 
     def get_settings(self):
         """Get game settings."""
@@ -99,6 +119,8 @@ class GameEngine:
         return history[-count:] if len(history) > count else history
 
     def reset_profile(self):
-        """Reset the profile (for testing or starting over)."""
-        self.profile.data = self.profile._create_default_profile()
-        self.profile.save()
+        """Reset the current profile statistics."""
+        user_id = self.profile_manager.current_user_id
+        if user_id:
+            self.profile_manager.reset_profile_stats(user_id)
+            self.profile = self.profile_manager.get_current_profile()

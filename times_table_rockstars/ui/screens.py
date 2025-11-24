@@ -23,7 +23,16 @@ class MenuScreen(Screen):
         self.game_engine = game_engine
         self.name = 'menu'
 
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        self.main_layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
+        self.add_widget(self.main_layout)
+
+    def on_pre_enter(self):
+        """Refresh the screen when entering."""
+        self.refresh_screen()
+
+    def refresh_screen(self):
+        """Refresh the menu screen with current user info."""
+        self.main_layout.clear_widgets()
 
         # Title
         title = Label(
@@ -34,11 +43,21 @@ class MenuScreen(Screen):
             size_hint_y=None,
             height='80dp'
         )
-        layout.add_widget(title)
+        self.main_layout.add_widget(title)
 
-        # Profile card
+        # Profile card with switch user button
+        profile_section = BoxLayout(orientation='vertical', spacing=5, size_hint_y=None, height='220dp')
+
         profile_card = ProfileCard(self.game_engine.get_profile())
-        layout.add_widget(profile_card)
+        profile_section.add_widget(profile_card)
+
+        switch_user_btn = RockButton(text="👥 Switch Player")
+        switch_user_btn.height = '50dp'
+        switch_user_btn.background_color = get_color_from_hex("#444444")
+        switch_user_btn.bind(on_press=self.go_to_user_select)
+        profile_section.add_widget(switch_user_btn)
+
+        self.main_layout.add_widget(profile_section)
 
         # Game mode buttons
         modes_layout = BoxLayout(orientation='vertical', spacing=10, size_hint_y=None)
@@ -60,7 +79,7 @@ class MenuScreen(Screen):
         soundcheck_btn.bind(on_press=self.go_to_soundcheck)
         modes_layout.add_widget(soundcheck_btn)
 
-        layout.add_widget(modes_layout)
+        self.main_layout.add_widget(modes_layout)
 
         # Bottom buttons
         bottom_layout = BoxLayout(orientation='horizontal', spacing=10, size_hint_y=None, height='60dp')
@@ -73,9 +92,11 @@ class MenuScreen(Screen):
         settings_btn.bind(on_press=self.go_to_settings)
         bottom_layout.add_widget(settings_btn)
 
-        layout.add_widget(bottom_layout)
+        self.main_layout.add_widget(bottom_layout)
 
-        self.add_widget(layout)
+    def go_to_user_select(self, instance):
+        """Go to user selection screen."""
+        self.manager.current = 'user_select'
 
     def go_to_garage_select(self, instance):
         self.manager.current = 'garage_select'
